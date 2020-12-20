@@ -14,6 +14,11 @@ typealias Point3 = SIMD3<Float>
 typealias Vec3 = SIMD3<Float>
 typealias Color3 = SIMD3<Float>
 
+    private let skyColor: Color3 = Color3(0.4,0.75,1.0)
+    private let horizonColor: Color3 = Color3(1.71,1.31,0.83)
+    private let sunColor: Color3 = Color3(1.5,1,0.6)
+    private let sunDirection: Vec3 = simd_normalize(Vec3(2,1,10))
+
 func hitSphere(center: Point3, radius: Float, r: inout Ray )->Float{
     let oc: Vec3 = r.origin - center
     let a = simd_length_squared(r.direction)
@@ -39,9 +44,14 @@ func rayColor(r: inout Ray, world: inout HittableList, depth: Int) -> Color3{
         }
         return Color3(0,0,0)
     }
-    let unitDirection: Vec3 = simd_normalize(r.direction)
-    let t = 0.5 * (unitDirection.y + 1.0)
-    return (1.0-t)*Color3(1,1,1) + t * Color3(0.5,0.7,1.0)
+   
+    //let unitDirection: Vec3 = simd_normalize(r.direction)
+    //let t = 0.5 * (unitDirection.y + 1.0)
+    //return (1.0-t)*Color3(1,1,1) + t * Color3(0.5,0.7,1.0)
+    let unitDirection: Float = sqrt(abs(simd_normalize(r.direction).y))
+    let sky: Color3 = ((1 - unitDirection) * horizonColor) + (unitDirection * skyColor)
+    let sun = 4 * sunColor * pow(max(simd_dot(sunDirection,simd_normalize(r.direction)),0),1500)
+    return sky + sun
 }
 
 func writeColor(stringOut: inout String, pixelColor: SIMD3<Float>, samplesPerPixel: Int){
